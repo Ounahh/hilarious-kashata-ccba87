@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>OUNAHH ANALYSTS EA - Trading Control Center</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        neonRed: '#ff2a5f',
+                        neonRedGlow: 'rgba(255, 42, 95, 0.4)',
+                        neonEmerald: '#00ffa3',
+                        neonEmeraldGlow: 'rgba(0, 255, 163, 0.4)',
+                        neonBlue: '#00d2ff',
+                        darkBg: '#080a0f',
+                        cardBg: 'rgba(16, 20, 31, 0.75)',
+                        metallicHeader: '#121722'
+                    },
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        rajdhani: ['Rajdhani', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #05070a;
+            color: #e2e8f0;
+            font-family: 'Rajdhani', sans-serif;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+        }
+
+        .glass-card {
+            background: rgba(15, 21, 33, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .glass-header {
+            background: rgba(10, 14, 23, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glow-red { box-shadow: 0 0 15px rgba(255, 42, 95, 0.5); }
+        .glow-emerald { box-shadow: 0 0 15px rgba(0, 255, 163, 0.5); }
+        .text-glow-red { text-shadow: 0 0 8px rgba(255, 42, 95, 0.8); }
+        .text-glow-emerald { text-shadow: 0 0 8px rgba(0, 255, 163, 0.8); }
+
+        .gauge-circle { transition: stroke-dashoffset 0.8s ease-in-out; }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen justify-between pb-20 max-w-md mx-auto relative border-x border-slate-800/40 shadow-2xl">
+
+    <!-- TOP HERO BANNER -->
+    <div class="relative w-full h-48 overflow-hidden bg-gradient-to-b from-gray-900 via-slate-900 to-darkBg">
+        <div class="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-luminosity scale-105" 
+             style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop');">
+        </div>
+        <div class="absolute inset-0 bg-[radial-gradient(#00ffa3_1px,transparent_1px)] [background-size:16px_16px] opacity-15"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-darkBg via-transparent to-transparent"></div>
+
+        <div class="relative z-10 p-4 flex flex-col justify-between h-full">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="relative">
+                        <div class="w-12 h-12 rounded-xl bg-slate-900 border border-neonEmerald/50 p-1 flex items-center justify-center glow-emerald overflow-hidden">
+                            <i class="fa-solid fa-robot text-2xl text-neonEmerald"></i>
+                        </div>
+                        <span class="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-neonEmerald rounded-full border-2 border-slate-900 animate-pulse"></span>
+                    </div>
+                    <div>
+                        <h1 class="font-orbitron font-extrabold text-lg text-white tracking-wider leading-none text-glow-emerald">
+                            OUNAHH <span class="text-neonRed">ANALYSTS</span>
+                        </h1>
+                        <p class="text-xs font-semibold text-slate-400 tracking-widest mt-1">TOP-DOWN SMC ENGINE v5.0</p>
+                    </div>
+                </div>
+
+                <div id="statusBadge" class="flex items-center px-2.5 py-1 rounded-full bg-emerald-950/80 border border-neonEmerald/60 text-neonEmerald text-xs font-bold tracking-wider animate-pulse">
+                    <span class="w-2 h-2 rounded-full bg-neonEmerald mr-1.5 shadow-[0_0_8px_#00ffa3]"></span>
+                    <span>ONLINE</span>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between bg-slate-900/80 backdrop-blur-md p-1.5 rounded-xl border border-slate-800/80">
+                <button onclick="toggleEAPower()" id="bannerPowerBtn" class="flex-1 py-1.5 px-3 rounded-lg bg-red-600/20 border border-neonRed/60 text-neonRed font-orbitron text-xs font-bold flex items-center justify-center space-x-1.5 active:scale-95 transition-all">
+                    <i class="fa-solid fa-power-off"></i>
+                    <span id="bannerPowerTxt">STOP EA</span>
+                </button>
+                <div class="w-px h-5 bg-slate-700/60 mx-1"></div>
+                <button onclick="openQuotesModal()" class="flex-1 py-1.5 px-3 rounded-lg bg-slate-800/60 hover:bg-slate-700/60 text-slate-200 font-orbitron text-xs font-semibold flex items-center justify-center space-x-1.5 active:scale-95 transition-all">
+                    <i class="fa-solid fa-chart-line text-neonBlue"></i>
+                    <span>QUOTES</span>
+                </button>
+                <div class="w-px h-5 bg-slate-700/60 mx-1"></div>
+                <button onclick="openKeyModal()" class="flex-1 py-1.5 px-3 rounded-lg bg-slate-800/60 hover:bg-slate-700/60 text-amber-400 font-orbitron text-xs font-semibold flex items-center justify-center space-x-1.5 active:scale-95 transition-all">
+                    <i class="fa-solid fa-key"></i>
+                    <span>HOST KEY</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN VIEWPORT -->
+    <main class="px-4 py-3 flex-1 overflow-y-auto no-scrollbar space-y-4">
+
+        <!-- TAB 1: HOME / DASHBOARD -->
+        <section id="tab-home" class="space-y-4">
+            <div class="glass-card rounded-2xl p-4 relative overflow-hidden">
+                <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                    <div class="flex items-center space-x-3">
+                        <div class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-700/60 text-neonBlue">
+                            <i class="fa-solid fa-network-wired text-lg"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Terminal Status</div>
+                            <div class="font-orbitron text-sm font-bold text-white flex items-center">
+                                MetaTrader 5
+                                <span class="ml-2 px-1.5 py-0.5 text-[10px] bg-slate-800 border border-slate-700 rounded text-slate-300">#3141460</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="inline-block w-2.5 h-2.5 rounded-full bg-neonEmerald shadow-[0_0_10px_#00ffa3]"></span>
+                        <div class="text-[11px] text-neonEmerald font-mono font-bold mt-0.5">12ms Latency</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mt-3">
+                    <div class="bg-slate-900/50 p-2.5 rounded-xl border border-slate-800/60">
+                        <span class="text-xs text-slate-400">Equity Balance</span>
+                        <div class="font-orbitron font-extrabold text-lg text-white">$14,852.<span class="text-xs text-slate-400">50</span></div>
+                    </div>
+                    <div class="bg-slate-900/50 p-2.5 rounded-xl border border-slate-800/60">
+                        <span class="text-xs text-slate-400">Today's Profit</span>
+                        <div class="font-orbitron font-extrabold text-lg text-neonEmerald">+ $824.<span class="text-xs text-emerald-400">10</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Session Intelligence -->
+            <div class="glass-card rounded-2xl p-4 relative">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="font-orbitron font-bold text-sm text-slate-200 uppercase tracking-wide flex items-center">
+                        <i class="fa-solid fa-gauge-high text-neonEmerald mr-2"></i>
+                        Session Intelligence
+                    </h2>
+                    <span id="sessionNameTag" class="px-2 py-0.5 text-[11px] font-bold rounded-md bg-neonBlue/10 border border-neonBlue/40 text-neonBlue">
+                        NY/LONDON OVERLAP
+                    </span>
+                </div>
+
+                <div class="flex items-center justify-between py-2">
+                    <div class="relative w-32 h-32 flex items-center justify-center">
+                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                            <path class="text-slate-800" stroke-width="3.5" stroke="currentColor" fill="none"
+                                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            <path id="gaugeProgress" class="text-neonEmerald gauge-circle" stroke-width="3.5" 
+                                  stroke-dasharray="98, 100" stroke-linecap="round" stroke="currentColor" fill="none"
+                                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        </svg>
+                        <div class="absolute flex flex-col items-center justify-center text-center">
+                            <span id="gaugeValue" class="font-orbitron font-black text-2xl text-white text-glow-emerald">98</span>
+                            <span class="text-[9px] text-slate-400 uppercase tracking-wider">LIQUIDITY SCORE</span>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 ml-4 space-y-2">
+                        <div class="bg-slate-900/60 p-2 rounded-xl border border-slate-800/60 flex justify-between items-center">
+                            <span class="text-xs text-slate-400">Remaining Time</span>
+                            <span id="sessionTimer" class="font-mono font-bold text-sm text-amber-400">02:22:10</span>
+                        </div>
+                        <div class="bg-slate-900/60 p-2 rounded-xl border border-slate-800/60 flex justify-between items-center">
+                            <span class="text-xs text-slate-400">Volatility Status</span>
+                            <span class="text-xs font-bold text-neonEmerald flex items-center">
+                                <i class="fa-solid fa-bolt mr-1 text-amber-400"></i> VERY HIGH
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- TAB 2: SMC TOP-DOWN SCANNER -->
+        <section id="tab-scanner" class="space-y-4 hidden">
+            <!-- Asset Selector Bar -->
+            <div class="glass-card rounded-2xl p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                    <h2 class="font-orbitron font-bold text-sm text-slate-200 uppercase tracking-wide flex items-center">
+                        <i class="fa-solid fa-sitemap text-neonRed mr-2"></i>
+                        Top-Down SMC Analysis
+                    </h2>
+                    <span class="text-[11px] font-mono text-neonEmerald font-bold">4H → 15M → 5M</span>
+                </div>
+
+                <div class="flex space-x-2 overflow-x-auto no-scrollbar py-1">
+                    <button onclick="selectSMCAsset('XAUUSD')" id="smc-chip-XAUUSD" class="px-3 py-1.5 rounded-xl text-xs font-bold font-orbitron border bg-neonRed/20 border-neonRed text-white shrink-0 transition-all">
+                        XAUUSD (GOLD)
+                    </button>
+                    <button onclick="selectSMCAsset('EURUSD')" id="smc-chip-EURUSD" class="px-3 py-1.5 rounded-xl text-xs font-bold font-orbitron border bg-slate-900 border-slate-800 text-slate-400 shrink-0 hover:border-slate-700 transition-all">
+                        EURUSD
+                    </button>
+                    <button onclick="selectSMCAsset('GBPUSD')" id="smc-chip-GBPUSD" class="px-3 py-1.5 rounded-xl text-xs font-bold font-orbitron border bg-slate-900 border-slate-800 text-slate-400 shrink-0 hover:border-slate-700 transition-all">
+                        GBPUSD
+                    </button>
+                    <button onclick="selectSMCAsset('BTCUSD')" id="smc-chip-BTCUSD" class="px-3 py-1.5 rounded-xl text-xs font-bold font-orbitron border bg-slate-900 border-slate-800 text-slate-400 shrink-0 hover:border-slate-700 transition-all">
+                        BTCUSD
+                    </button>
+                </div>
+            </div>
+
+            <!-- TIER 1: 4H HIGHER TIMEFRAME DIRECTION & KEY LEVELS -->
+            <div class="glass-card rounded-2xl p-4 border-l-4 border-l-neonBlue space-y-3">
+                <div class="flex justify-between items-center border-b border-slate-800/80 pb-2">
+                    <span class="font-orbitron font-bold text-xs text-neonBlue flex items-center">
+                        <i class="fa-solid fa-layer-group mr-1.5"></i> TIER 1: 4H HIGHER TIMEFRAME
+                    </span>
+                    <span id="tf4hBias" class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-neonEmerald border border-neonEmerald/40">
+                        BULLISH BIAS
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div class="bg-slate-900/80 p-2 rounded-xl border border-slate-800">
+                        <span class="text-slate-400 block text-[10px] uppercase font-bold">4H Swing High</span>
+                        <span id="tf4hHigh" class="font-mono font-bold text-white">2,748.20</span>
+                    </div>
+                    <div class="bg-slate-900/80 p-2 rounded-xl border border-slate-800">
+                        <span class="text-slate-400 block text-[10px] uppercase font-bold">4H Swing Low</span>
+                        <span id="tf4hLow" class="font-mono font-bold text-white">2,712.50</span>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/90 p-2.5 rounded-xl border border-slate-800 space-y-1.5">
+                    <div class="flex justify-between text-xs">
+                        <span class="text-slate-400">4H Key Level POI:</span>
+                        <span id="tf4hKeyLevel" class="font-mono font-bold text-amber-400">2,728.00 (Demand OB)</span>
+                    </div>
+                    <div class="flex justify-between text-xs">
+                        <span class="text-slate-400">4H Liquidity Sweep:</span>
+                        <span id="tf4hSweep" class="font-mono font-bold text-neonEmerald">Sell-Side Taken</span>
+                    </div>
+                    <div class="flex justify-between text-xs">
+                        <span class="text-slate-400">4H Rejection Candle:</span>
+                        <span id="tf4hRejection" class="font-mono font-bold text-neonEmerald">Confirmed Pinbar</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TIER 2 & 3: 15M MSS & 5M ENTRY CONFIRMATION MODEL -->
+            <div class="glass-card rounded-2xl p-4 border-l-4 border-l-neonEmerald space-y-3">
+                <div class="flex justify-between items-center border-b border-slate-800/80 pb-2">
+                    <span class="font-orbitron font-bold text-xs text-neonEmerald flex items-center">
+                        <i class="fa-solid fa-bullseye mr-1.5"></i> TIER 2 & 3: ENTRY MODEL (15M / 5M)
+                    </span>
+                    <span class="text-[10px] font-mono text-neonEmerald font-bold animate-pulse">CONFIRMED</span>
+                </div>
+
+                <!-- Step Checklist -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900/80 border border-slate-800 text-xs">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-circle-check text-neonEmerald"></i>
+                            <span class="text-slate-200">15m Market Structure Shift (MSS)</span>
+                        </div>
+                        <span id="m15Mss" class="font-mono font-bold text-neonEmerald">BULLISH CHoCH</span>
+                    </div>
+
+                    <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900/80 border border-slate-800 text-xs">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-circle-check text-neonEmerald"></i>
+                            <span class="text-slate-200">5m Drop & 5m MSS Shift</span>
+                        </div>
+                        <span id="m5Mss" class="font-mono font-bold text-neonEmerald">BREAK ABOVE M5 HIGH</span>
+                    </div>
+
+                    <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900/80 border border-slate-800 text-xs">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-circle-check text-neonEmerald"></i>
+                            <span class="text-slate-200">5m Liquidity Sweep at Key Level</span>
+                        </div>
+                        <span id="m5Sweep" class="font-mono font-bold text-neonEmerald">LOW SWEPT @ 2,728.50</span>
+                    </div>
+
+                    <div class="flex items-center justify-between p-2 rounded-xl bg-slate-900/80 border border-slate-800 text-xs">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-fire text-amber-400"></i>
+                            <span class="text-slate-200">Engulfing Candlestick Trigger</span>
+                        </div>
+                        <span id="m5Engulfing" class="font-mono font-bold text-neonEmerald">BULLISH ENGULFING</span>
+                    </div>
+                </div>
+
+                <!-- Signal Trigger Execution Button -->
+                <button onclick="executeSMCSignal()" id="smcExecuteBtn" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 via-neonEmerald to-teal-500 text-slate-950 font-orbitron font-extrabold text-sm tracking-wider uppercase shadow-lg shadow-emerald-900/40 active:scale-98 transition-all flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-bolt text-lg"></i>
+                    <span id="smcExecuteTxt">EXECUTE TOP-DOWN BUY (XAUUSD)</span>
+                </button>
+            </div>
+        </section>
+
+
+        <!-- TAB 3: NEWS / FUNDAMENTALS -->
+        <section id="tab-news" class="space-y-4 hidden">
+            <div class="glass-card rounded-2xl p-4 flex justify-between items-center">
+                <div>
+                    <h2 class="font-orbitron font-bold text-sm text-slate-200 uppercase tracking-wide flex items-center">
+                        <i class="fa-solid fa-newspaper text-neonBlue mr-2"></i>
+                        Global Economic Hub
+                    </h2>
+                    <p class="text-xs text-slate-400">High Impact Fundamental Events</p>
+                </div>
+                <span class="px-2 py-1 rounded-md bg-slate-800 text-slate-300 font-mono text-xs border border-slate-700">HIGH IMPACT ONLY</span>
+            </div>
+
+            <div class="space-y-3">
+                <!-- Event 1: FOMC -->
+                <div class="glass-card rounded-2xl p-4 border-l-4 border-l-neonEmerald space-y-2">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-950 text-neonRed border border-neonRed/40">HIGH IMPACT</span>
+                            <h3 class="font-orbitron font-bold text-base text-white mt-1">FOMC Interest Rate Decision</h3>
+                        </div>
+                        <span class="font-mono text-xs font-bold text-amber-400 bg-slate-900 px-2 py-1 rounded border border-slate-800">In 01h 12m</span>
+                    </div>
+
+                    <div class="bg-slate-900/90 p-2.5 rounded-xl border border-slate-800/80 flex items-center justify-between">
+                        <div>
+                            <div class="text-[10px] text-slate-400 uppercase font-bold">EA Directional Forecast</div>
+                            <div class="font-orbitron font-extrabold text-sm text-neonEmerald flex items-center">
+                                <i class="fa-solid fa-arrow-trend-up mr-1.5"></i> XAUUSD (GOLD) — BUY SIGNAL
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Event 2: US CPI Inflation -->
+                <div class="glass-card rounded-2xl p-4 border-l-4 border-l-neonRed space-y-2">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-950 text-neonRed border border-neonRed/40">HIGH IMPACT</span>
+                            <h3 class="font-orbitron font-bold text-base text-white mt-1">US Core CPI Inflation (MoM)</h3>
+                        </div>
+                        <span class="font-mono text-xs font-bold text-slate-400 bg-slate-900 px-2 py-1 rounded border border-slate-800">Tomorrow 14:30</span>
+                    </div>
+
+                    <div class="bg-slate-900/90 p-2.5 rounded-xl border border-slate-800/80 flex items-center justify-between">
+                        <div>
+                            <div class="text-[10px] text-slate-400 uppercase font-bold">EA Directional Forecast</div>
+                            <div class="font-orbitron font-extrabold text-sm text-neonRed flex items-center">
+                                <i class="fa-solid fa-arrow-trend-down mr-1.5"></i> EURUSD — SELL SIGNAL
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- BOTTOM NAVIGATION BAR -->
+    <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto glass-header border-t border-slate-800 px-6 py-2 flex justify-around items-center z-40">
+        <button onclick="switchTab('home')" id="nav-home" class="flex flex-col items-center text-neonEmerald transition-all duration-300">
+            <i class="fa-solid fa-chart-pie text-lg"></i>
+            <span class="text-[10px] font-orbitron font-bold mt-1">DASHBOARD</span>
+        </button>
+
+        <button onclick="switchTab('scanner')" id="nav-scanner" class="flex flex-col items-center text-slate-500 hover:text-slate-300 transition-all duration-300">
+            <i class="fa-solid fa-sitemap text-lg"></i>
+            <span class="text-[10px] font-orbitron font-bold mt-1">SMC SCAN</span>
+        </button>
+
+        <button onclick="switchTab('news')" id="nav-news" class="flex flex-col items-center text-slate-500 hover:text-slate-300 transition-all duration-300">
+            <i class="fa-solid fa-newspaper text-lg"></i>
+            <span class="text-[10px] font-orbitron font-bold mt-1">NEWS</span>
+        </button>
+    </nav>
+
+
+    <!-- MODAL 1: HOST KEY -->
+    <div id="keyModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-card w-full max-w-sm rounded-2xl p-5 border border-slate-700/80 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="font-orbitron font-bold text-sm text-white flex items-center">
+                    <i class="fa-solid fa-shield-halved text-amber-400 mr-2"></i> Host Key License
+                </h3>
+                <button onclick="closeKeyModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <div class="space-y-3">
+                <p class="text-xs text-slate-300">Enter your official OUNAHH ANALYSTS EA license key to authorize live execution on this terminal.</p>
+                <input type="text" id="hostKeyInput" value="OUNAHH-EA-8849-PRO-X" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-neonEmerald font-mono focus:outline-none focus:border-neonEmerald mt-1">
+            </div>
+
+            <button onclick="verifyKey()" class="w-full py-2.5 rounded-xl bg-neonEmerald text-slate-950 font-orbitron font-bold text-xs uppercase tracking-wider active:scale-95 transition-all">
+                VERIFY & RE-AUTHENTICATE
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL 2: LIVE QUOTES -->
+    <div id="quotesModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-card w-full max-w-sm rounded-2xl p-5 border border-slate-700/80 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="font-orbitron font-bold text-sm text-white flex items-center">
+                    <i class="fa-solid fa-chart-line text-neonBlue mr-2"></i> Live Market Quotes
+                </h3>
+                <button onclick="closeQuotesModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <div class="space-y-2 max-h-60 overflow-y-auto no-scrollbar">
+                <div class="flex justify-between items-center bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                    <span class="font-orbitron font-bold text-xs text-white">XAUUSD (Gold)</span>
+                    <span class="font-mono text-xs font-bold text-neonEmerald">2,734.80</span>
+                </div>
+                <div class="flex justify-between items-center bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                    <span class="font-orbitron font-bold text-xs text-white">EURUSD</span>
+                    <span class="font-mono text-xs font-bold text-neonRed">1.08420</span>
+                </div>
+            </div>
+
+            <button onclick="closeQuotesModal()" class="w-full py-2.5 rounded-xl bg-slate-800 text-slate-200 font-orbitron font-bold text-xs uppercase active:scale-95 transition-all">
+                CLOSE
+            </button>
+        </div>
+    </div>
+
+    <!-- TOAST FEEDBACK -->
+    <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 border border-neonEmerald text-neonEmerald px-4 py-2.5 rounded-xl text-xs font-orbitron font-bold shadow-2xl flex items-center space-x-2 transition-all duration-300 opacity-0 pointer-events-none">
+        <i class="fa-solid fa-circle-check"></i>
+        <span id="toastMsg">Action completed successfully</span>
+    </div>
+
+    <script>
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'click') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.05);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.05);
+            } else if (type === 'execute') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.2);
+            }
+        }
+
+        let eaRunning = true;
+
+        function switchTab(tabName) {
+            playSound('click');
+            ['home', 'scanner', 'news'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                document.getElementById(`nav-${t}`).className = "flex flex-col items-center text-slate-500 hover:text-slate-300 transition-all duration-300";
+            });
+
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            document.getElementById(`nav-${tabName}`).className = "flex flex-col items-center text-neonEmerald transition-all duration-300";
+        }
+
+        function toggleEAPower() {
+            playSound('click');
+            eaRunning = !eaRunning;
+            
+            const statusBadge = document.getElementById('statusBadge');
+            const bannerPowerBtn = document.getElementById('bannerPowerBtn');
+            const bannerPowerTxt = document.getElementById('bannerPowerTxt');
+
+            if (eaRunning) {
+                statusBadge.className = "flex items-center px-2.5 py-1 rounded-full bg-emerald-950/80 border border-neonEmerald/60 text-neonEmerald text-xs font-bold tracking-wider animate-pulse";
+                statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-neonEmerald mr-1.5 shadow-[0_0_8px_#00ffa3]"></span><span>ONLINE</span>`;
+                bannerPowerBtn.className = "flex-1 py-1.5 px-3 rounded-lg bg-red-600/20 border border-neonRed/60 text-neonRed font-orbitron text-xs font-bold flex items-center justify-center space-x-1.5 active:scale-95 transition-all";
+                bannerPowerTxt.textContent = "STOP EA";
+                showToast("EA Started - Live Execution Online");
+            } else {
+                statusBadge.className = "flex items-center px-2.5 py-1 rounded-full bg-red-950/80 border border-neonRed/60 text-neonRed text-xs font-bold tracking-wider";
+                statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-neonRed mr-1.5 shadow-[0_0_8px_#ff2a5f]"></span><span>PAUSED</span>`;
+                bannerPowerBtn.className = "flex-1 py-1.5 px-3 rounded-lg bg-emerald-600/20 border border-neonEmerald/60 text-neonEmerald font-orbitron text-xs font-bold flex items-center justify-center space-x-1.5 active:scale-95 transition-all";
+                bannerPowerTxt.textContent = "START EA";
+                showToast("EA Paused - Terminal Safeguard Active");
+            }
+        }
+
+        // Top-Down SMC Multi-Asset Switcher
+        function selectSMCAsset(symbol) {
+            playSound('click');
+            ['XAUUSD', 'EURUSD', 'GBPUSD', 'BTCUSD'].forEach(c => {
+                const btn = document.getElementById(`smc-chip-${c}`);
+                if (c === symbol) {
+                    btn.className = "px-3 py-1.5 rounded-xl text-xs font-bold font-orbitron border bg-neonRed/20 border-neonRed text-white shrink-0 transition-all";
+                } else {
+                    btn.className = "px-3 py-1.5 rounded-xl text-xs font-bold font-orbitron border bg-slate-900 border-slate-800 text-slate-400 shrink-0 hover:border-slate-700 transition-all";
+                }
+            });
+
+            const smcData = {
+                'XAUUSD': {
+                    bias: 'BULLISH BIAS', high: '2,748.20', low: '2,712.50', keyLevel: '2,728.00 (Demand OB)', sweep: 'Sell-Side Taken', rejection: 'Confirmed Pinbar',
+                    m15: 'BULLISH CHoCH', m5Mss: 'BREAK ABOVE M5 HIGH', m5Sweep: 'LOW SWEPT @ 2,728.50', engulfing: 'BULLISH ENGULFING', btnTxt: 'EXECUTE TOP-DOWN BUY (XAUUSD)'
+                },
+                'EURUSD': {
+                    bias: 'BEARISH BIAS', high: '1.08950', low: '1.08120', keyLevel: '1.08780 (Supply OB)', sweep: 'Buy-Side Taken', rejection: 'Bearish Wick Rejection',
+                    m15: 'BEARISH CHoCH', m5Mss: 'BREAK BELOW M5 LOW', m5Sweep: 'HIGH SWEPT @ 1.08780', engulfing: 'BEARISH ENGULFING', btnTxt: 'EXECUTE TOP-DOWN SELL (EURUSD)'
+                },
+                'GBPUSD': {
+                    bias: 'BULLISH BIAS', high: '1.30400', low: '1.29100', keyLevel: '1.29500 (Demand OB)', sweep: 'Sell-Side Taken', rejection: 'Hammer Rejection',
+                    m15: 'BULLISH CHoCH', m5Mss: 'BREAK ABOVE M5 HIGH', m5Sweep: 'LOW SWEPT @ 1.29510', engulfing: 'BULLISH ENGULFING', btnTxt: 'EXECUTE TOP-DOWN BUY (GBPUSD)'
+                },
+                'BTCUSD': {
+                    bias: 'BULLISH BIAS', high: '68,900', low: '66,200', keyLevel: '67,100 (4H FVG)', sweep: 'Liquidity Grabbed', rejection: 'Confirmed Wick',
+                    m15: 'BULLISH CHoCH', m5Mss: 'BREAK ABOVE M5 HIGH', m5Sweep: 'LOW SWEPT @ 67,120', engulfing: 'BULLISH ENGULFING', btnTxt: 'EXECUTE TOP-DOWN BUY (BTCUSD)'
+                }
+            };
+
+            const item = smcData[symbol];
+            document.getElementById('tf4hBias').textContent = item.bias;
+            document.getElementById('tf4hHigh').textContent = item.high;
+            document.getElementById('tf4hLow').textContent = item.low;
+            document.getElementById('tf4hKeyLevel').textContent = item.keyLevel;
+            document.getElementById('tf4hSweep').textContent = item.sweep;
+            document.getElementById('tf4hRejection').textContent = item.rejection;
+            document.getElementById('m15Mss').textContent = item.m15;
+            document.getElementById('m5Mss').textContent = item.m5Mss;
+            document.getElementById('m5Sweep').textContent = item.m5Sweep;
+            document.getElementById('m5Engulfing').textContent = item.engulfing;
+            document.getElementById('smcExecuteTxt').textContent = item.btnTxt;
+        }
+
+        function executeSMCSignal() {
+            playSound('execute');
+            showToast("TOP-DOWN SMC TRADE SENT TO MT5 TERMINAL");
+        }
+
+        function openKeyModal() { playSound('click'); document.getElementById('keyModal').classList.remove('hidden'); }
+        function closeKeyModal() { playSound('click'); document.getElementById('keyModal').classList.add('hidden'); }
+        function verifyKey() { playSound('execute'); showToast("License Re-Validated"); closeKeyModal(); }
+
+        function openQuotesModal() { playSound('click'); document.getElementById('quotesModal').classList.remove('hidden'); }
+        function closeQuotesModal() { playSound('click'); document.getElementById('quotesModal').classList.add('hidden'); }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').textContent = msg;
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            setTimeout(() => { toast.classList.add('opacity-0', 'pointer-events-none'); }, 3000);
+        }
+    </script>
+</body>
+</html>
